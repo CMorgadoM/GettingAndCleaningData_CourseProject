@@ -1,0 +1,80 @@
+---
+title: "Codebook"
+author: "Cristobal Morgado"
+date: '2022-07-03'
+output: pdf_document
+---
+
+```{r}
+Var_description <- function(x){
+    stat <- NULL
+    BoG <- NULL
+    sensor <- NULL
+    axisXYZ <- NULL
+    activity <- NULL
+    #stat
+    if(grepl("mean", x)){
+        stat <- "Average of the means for"
+    } else if(grepl("std", x)){
+        stat <- "Average of the estandar deviations for"
+    }
+    #bog
+    if(grepl("[Bb]ody", x)){ 
+        BoG <- "body"
+        } else if(grepl("[Gg]ravity", x)){
+        BoG <- "gravity"
+        } else {BoG <- ""} 
+    #sensor
+    if(grepl("acceleration", x)){
+        sensor <- "acceleration"
+    } else if(grepl("gyroscope", x)){
+        sensor <- "gyroscope"
+    } else{sensor <- ""}
+    # axis
+    if(grepl("_X_", x)){
+        axisXYZ <- "X axis"
+    } else if(grepl("_Y_", x)){
+        axisXYZ <- "Y axis"
+    } else if(grepl("_Z_", x)){
+        axisXYZ <- "Z axis"
+    } else {axisXYZ <- ""}
+    # activity
+    acts <- unique(merged_data$activity_name)
+    if(grepl("WALKING$", x)){
+        activity <- acts[1]
+    } else if(grepl("WALKING_UPSTAIRS$", x)){
+        activity <- acts[2]
+    } else if(grepl("WALKING_DOWNSTAIRS$", x)){
+        activity <- acts[3]
+    } else if(grepl("SITTING$", x)){
+        activity <- acts[4]
+    } else if(grepl("STANDING$", x)){
+        activity <- acts[5]
+    } else if(grepl("LAYING$", x)){
+        activity <- acts[6]
+    } else{activity <- ""}
+
+    description <- paste(stat, "time of signals captured by the", BoG, sensor, "sensor on the", axisXYZ, "for the", activity, "activity.") 
+    description
+}
+```
+
+
+```{r}
+a <- as_tibble(names(Final_dataset_xd))
+b <- as_tibble(sapply(Final_dataset_xd, class))
+c <- as_tibble(sapply(Final_dataset_xd, mean, na.rm=T)) 
+d <- as_tibble(sapply(Final_dataset_xd, sd, na.rm=T)) 
+e <- as_tibble(sapply(Final_dataset_xd, max, na.rm=T)) 
+f <- as_tibble(sapply(Final_dataset_xd, min, na.rm=T)) 
+g <- as_tibble(sapply(Final_dataset_xd, function(x) {sum(!is.na(x))})) 
+h <- as_tibble(map_chr(names(Final_dataset_xd), Var_description))
+codebook <- cbind(a,b,g,c,d,e,f,h)
+names(codebook) <- c("Variable_name", "Class", "N°_of_observations", "Mean", "Estandar_dev", "Max_value", "Min_value", "Description")
+rm(a,b,c,d,e,f,g,h)
+codebook[1,6] <- "30"
+codebook[1,8] <- "ID of the volunteer of the experiment"
+codebook
+write_csv(codebook, file = "C:/Users/juice/codebook.csv")
+```
+
